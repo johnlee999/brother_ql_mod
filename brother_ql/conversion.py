@@ -77,7 +77,7 @@ def convert(qlr, images, label,  **kwargs):
     except BrotherQLUnsupportedCmd:
         pass
 
-    for image in images:
+    for i, image in enumerate(images):
         if isinstance(image, Image.Image):
             im = image
         else:
@@ -180,7 +180,7 @@ def convert(qlr, images, label,  **kwargs):
             pass
         try:
             qlr.dpi_600 = dpi_600
-            qlr.cut_at_end = cut
+            qlr.cut_at_end = True
             qlr.two_color_printing = True if red else False
             qlr.add_expanded_mode()
         except BrotherQLUnsupportedCmd:
@@ -194,6 +194,9 @@ def convert(qlr, images, label,  **kwargs):
             qlr.add_raster_data(black_im, red_im)
         else:
             qlr.add_raster_data(im)
-        qlr.add_print()
+        if i == len(images) - 1:
+            qlr.add_print(True)
+        else:
+            qlr.add_print(False)
 
     return qlr.data
