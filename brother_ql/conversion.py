@@ -66,18 +66,15 @@ def convert(qlr, images, label,  **kwargs):
     if red and not qlr.two_color_support:
         raise BrotherQLUnsupportedCmd('Printing in red is not supported with the selected model.')
 
-    try:
-        qlr.add_switch_mode()
-    except BrotherQLUnsupportedCmd:
-        pass
+    # try:
+    #     qlr.add_switch_mode()
+    # except BrotherQLUnsupportedCmd:
+    #     pass
     qlr.add_invalidate()
     qlr.add_initialize()
-    try:
-        qlr.add_switch_mode()
-    except BrotherQLUnsupportedCmd:
-        pass
-
+    
     for i, image in enumerate(images):
+
         if isinstance(image, Image.Image):
             im = image
         else:
@@ -155,8 +152,15 @@ def convert(qlr, images, label,  **kwargs):
                 im = im.convert("1", dither=Image.FLOYDSTEINBERG)
             else:
                 im = im.point(lambda x: 0 if x < threshold else 255, mode="1")
+        
+        # 動的コマンドモード切替は本来毎ページ必要        
+        try:
+            qlr.add_switch_mode()
+        except BrotherQLUnsupportedCmd:
+            pass
+        # ステータス情報リクエスト \x1B\x69\x53 network print の場合、不要かも？？
+        if i == 0: qlr.add_status_information()
 
-        qlr.add_status_information()
         tape_size = label_specs['tape_size']
         if label_specs['kind'] in (DIE_CUT_LABEL, ROUND_DIE_CUT_LABEL):
             qlr.mtype = 0x0B
